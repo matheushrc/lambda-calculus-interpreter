@@ -64,13 +64,13 @@ step (Times (Num n1) e2) =
   let e2' = step e2
    in Times (Num n1) e2'
 step (Times e1 e2) = Times (step e1) e2
--- Implementar step para If
--- slide 10
 step (App (Lam x tp e1) e2) =
   if isValue e2
     then
       subst x e2 e1 -- trata isso (\x -> x + 1) 2
     else App (Lam x tp e1) (step e2) -- trata isso (\x -> x + 1) (2 + 3)
+-- Implementar step para If
+-- slide 10
 step (If BTrue e1 e2) = e1
 step (If BFalse e1 e2) = e2
 step (If e e1 e2) = If (step e) e1 e2

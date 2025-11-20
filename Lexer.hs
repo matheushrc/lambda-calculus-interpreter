@@ -58,7 +58,6 @@ lexer ('.' : cs) = TokenDot : lexer cs
 lexer (',' : cs) = TokenComma : lexer cs
 lexer ('&' : '&' : cs) = TokenAnd : lexer cs
 lexer ('|' : '|' : cs) = TokenOr : lexer cs
-lexer ('i' : 'f' : cs) = TokenIf : lexer cs
 -- criar lexer para VAR, LAM E APP
 lexer (c : cs)
   | isSpace c = lexer cs
@@ -72,3 +71,7 @@ lexNum cs = case span isDigit cs of
 lexKw cs = case span isAlpha cs of
   ("true", rest) -> TokenTrue : lexer rest
   ("false", rest) -> TokenFalse : lexer rest
+  ("if", rest) -> TokenIf : lexer rest
+  ("app", rest) -> TokenApp : lexer rest
+  ("lambda", rest) -> TokenLam : lexer rest
+  (var, rest) -> TokenVar var : lexer rest
