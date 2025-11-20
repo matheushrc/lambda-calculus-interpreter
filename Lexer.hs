@@ -16,6 +16,10 @@ data Token
   | TokenVar String
   | TokenLam
   | TokenApp
+  | TokenLBrace
+  | TokenRBrace
+  | TokenDot
+  | TokenComma
   deriving (Show)
 
 data Expr
@@ -31,12 +35,15 @@ data Expr
   | Var String
   | Lam String Ty Expr
   | App Expr Expr
+  | Tuple [Expr]
+  | Proj Expr Int
   deriving (Show)
 
 data Ty
   = TNum
   | TBool
   | TFun Ty Ty
+  | TTuple [Ty]
   deriving (Show, Eq)
 
 lexer :: String -> [Token]
@@ -45,6 +52,10 @@ lexer ('+' : cs) = TokenPlus : lexer cs
 lexer ('*' : cs) = TokenTimes : lexer cs
 lexer ('(' : cs) = TokenLParen : lexer cs
 lexer (')' : cs) = TokenRParen : lexer cs
+lexer ('{' : cs) = TokenLBrace : lexer cs
+lexer ('}' : cs) = TokenRBrace : lexer cs
+lexer ('.' : cs) = TokenDot : lexer cs
+lexer (',' : cs) = TokenComma : lexer cs
 lexer ('&' : '&' : cs) = TokenAnd : lexer cs
 lexer ('|' : '|' : cs) = TokenOr : lexer cs
 lexer ('i' : 'f' : cs) = TokenIf : lexer cs

@@ -1,18 +1,18 @@
 {
-module Parser where 
+module Parser where
 
-import Lexer 
+import Lexer
 }
 
-%name parser 
+%name parser
 %tokentype { Token }
 %error { parseError }
 
--- isso aqui é a ordem de precesencia, quanto mais abaixo primeiro é checada
+-- Precedence order: lower priority rules first
 %left '+' '-'
 %left '*'
 
-%token 
+%token
     num             { TokenNum $$ }
     true            { TokenTrue }
     false           { TokenFalse }
@@ -23,9 +23,13 @@ import Lexer
     '('             { TokenLParen }
     ')'             { TokenRParen }
     'if'            { TokenIf }
-    
+    '{'             { TokenLBrace }
+    '}'             { TokenRBrace }
+    '.'             { TokenDot }
+    ','             { TokenComma }
 
-%% 
+
+%%
 
 Exp     : num              { Num $1 }
         | true             { BTrue }
@@ -36,12 +40,16 @@ Exp     : num              { Num $1 }
         | Exp "||" Exp     { Or $1 $3 }
         | '(' Exp ')'      { Paren $2 }
         | 'if' Exp Exp Exp { If $2 $3 $4 }
+        | '{' ExpList '}'  { Tuple $2 }
+        | '{' '}'          { Tuple [] }
+        | Exp '.' num      { Proj $1 $3 }
 
-{ 
+ExpList : Exp              { [$1] }
+        | Exp ',' ExpList  { $1 : $3 }
 
-parseError :: [Token] -> a 
+{
+
+parseError :: [Token] -> a
 parseError _ = error "Syntax error!"
 
 }
-
--- implementar lambda calculus

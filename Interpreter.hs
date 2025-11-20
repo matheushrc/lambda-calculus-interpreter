@@ -1,6 +1,6 @@
 module Interpreter where
 
-import Lexer (Expr (Add, And, App, BFalse, BTrue, If, Lam, Num, Or, Times, Var))
+import Lexer (Expr (Add, And, App, BFalse, BTrue, If, Lam, Num, Or, Paren, Proj, Times, Tuple, Var))
 import Parser
 
 isValue :: Expr -> Bool
@@ -8,6 +8,8 @@ isValue BTrue = True
 isValue BFalse = True
 isValue (Num _) = True
 isValue (Lam _ _ _) = True
+isValue (Tuple exprs) = all isValue exprs
+isValue (Paren e) = isValue e
 isValue _ = False
 
 subst :: String -> Expr -> Expr -> Expr
@@ -25,6 +27,12 @@ subst x s (Lam y tp t1) = Lam y tp (subst x s t1)
 subst x s (App t1 t2) = App (subst x s t1) (subst x s t2)
 subst x s (Add t1 t2) = Add (subst x s t1) (subst x s t2)
 subst x s (And t1 t2) = And (subst x s t1) (subst x s t2)
+subst x s (Or t1 t2) = Or (subst x s t1) (subst x s t2)
+subst x s (Times t1 t2) = Times (subst x s t1) (subst x s t2)
+subst x s (If t1 t2 t3) = If (subst x s t1) (subst x s t2) (subst x s t3)
+subst x s (Tuple exprs) = Tuple (map (subst x s) exprs)
+subst x s (Proj e idx) = Proj (subst x s e) idx
+subst x s (Paren e) = Paren (subst x s e)
 
 -- subst "x" (Num 2) (Lam "y" (Var "x")) -> Lam "y" (Num 2)
 -- subst "x" (Num 2) (App (Lam "y" (Var "x")) (Var "x")) ->
@@ -67,6 +75,23 @@ step (If BTrue e1 e2) = e1
 step (If BFalse e1 e2) = e2
 step (If e e1 e2) = If (step e) e1 e2
 
+-- E-ProjTuple: {v1, ..., vn}.j -> vj
+step (Proj (Tuple exprs) idx) =
+  if all isValue exprs
+    then exprs !! (idx - 1) -- 1-based to 0-based indexing
+    else Proj (step (Tuple exprs)) idx
+-- E-Proj: t1 -> t1' implies t1.i -> t1'.i
+step (Proj e idx) = Proj (step e) idx
+-- E-Tuple: evaluate tuple elements left-to-right
+step (Tuple exprs) = Tuple (stepTupleElements exprs)
+  where
+    stepTupleElements [] = []
+    stepTupleElements (e:es) =
+      if isValue e
+        then e : stepTupleElements es
+        else step e : es
+-- step for Paren
+step (Paren e) = e
 -- step (App (Lam "x" (Add (Var "x") (Num 1))) (Num 2))
 -- step (App (Lam "x" (Add (Var "x") (Num 1))) (Add (Num 2) (Num 3)))
 eval :: Expr -> Expr

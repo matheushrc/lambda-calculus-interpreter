@@ -37,6 +37,8 @@ typeof ctx (If e e1 e2) =
           | otherwise -> Nothing
         _ -> Nothing
     _ -> Nothing
+-- TypeOf for Paren
+typeof ctx (Paren e) = typeof ctx e
 typeof ctx (Var x) = lookup x ctx
 typeof ctx (Lam x tp b) =
   let ctx' = (x, tp) : ctx
@@ -51,6 +53,25 @@ typeof ctx (App e1 e2) =
           | t2 == tp -> Just tr
           | otherwise -> Nothing -- professor nao implementou essa linha, então tambem posso remover do IF
         _ -> Nothing
+    _ -> Nothing
+-- TypeOf for Tuple (T-Tuple rule)
+typeof ctx (Tuple exprs) =
+  let types = map (typeof ctx) exprs
+   in if all isJust types
+        then Just (TTuple (map fromJust types))
+        else Nothing
+  where
+    isJust (Just _) = True
+    isJust Nothing = False
+    fromJust (Just x) = x
+    fromJust Nothing = error "Impossible"
+-- TypeOf for Projection (T-Proj rule)
+typeof ctx (Proj e idx) =
+  case typeof ctx e of
+    Just (TTuple types) ->
+      if idx >= 1 && idx <= length types
+        then Just (types !! (idx - 1)) -- Convert 1-based to 0-based indexing
+        else Nothing
     _ -> Nothing
 
 typecheck :: Expr -> Expr
