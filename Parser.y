@@ -9,8 +9,12 @@ import Lexer
 %error { parseError }
 
 -- Precedence order: lower priority rules first
+%right lambda
+%left "||"
+%left "&&"
 %left '+' '-'
 %left '*'
+%left APP
 
 %token
     num             { TokenNum $$ }
@@ -27,6 +31,12 @@ import Lexer
     '}'             { TokenRBrace }
     '.'             { TokenDot }
     ','             { TokenComma }
+    var             { TokenVar $$ }
+    lambda          { TokenLam }
+    ':'             { TokenColon }
+    '->'            { TokenArrow }
+    tnum            { TokenTNum }
+    tbool           { TokenTBool }
 
 
 %%
@@ -34,6 +44,9 @@ import Lexer
 Exp     : num              { Num $1 }
         | true             { BTrue }
         | false            { BFalse }
+        | var              { Var $1 }
+        | lambda var ':' Type '.' Exp { Lam $2 $4 $6 }
+        | Exp Exp %prec APP { App $1 $2 }
         | Exp '+' Exp      { Add $1 $3 }
         | Exp '*' Exp      { Times $1 $3 }
         | Exp "&&" Exp     { And $1 $3 }
@@ -43,6 +56,11 @@ Exp     : num              { Num $1 }
         | '{' ExpList '}'  { Tuple $2 }
         | '{' '}'          { Tuple [] }
         | Exp '.' num      { Proj $1 $3 }
+
+Type    : tnum             { TNum }
+        | tbool            { TBool }
+        | Type '->' Type   { TFun $1 $3 }
+        | '(' Type ')'     { $2 }
 
 ExpList : Exp              { [$1] }
         | Exp ',' ExpList  { $1 : $3 }

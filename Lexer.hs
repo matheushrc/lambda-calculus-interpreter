@@ -20,6 +20,10 @@ data Token
   | TokenRBrace
   | TokenDot
   | TokenComma
+  | TokenColon
+  | TokenArrow
+  | TokenTNum
+  | TokenTBool
   deriving (Show)
 
 data Expr
@@ -56,9 +60,10 @@ lexer ('{' : cs) = TokenLBrace : lexer cs
 lexer ('}' : cs) = TokenRBrace : lexer cs
 lexer ('.' : cs) = TokenDot : lexer cs
 lexer (',' : cs) = TokenComma : lexer cs
+lexer (':' : cs) = TokenColon : lexer cs
+lexer ('-' : '>' : cs) = TokenArrow : lexer cs
 lexer ('&' : '&' : cs) = TokenAnd : lexer cs
 lexer ('|' : '|' : cs) = TokenOr : lexer cs
--- criar lexer para VAR, LAM E APP
 lexer (c : cs)
   | isSpace c = lexer cs
   | isDigit c = lexNum (c : cs)
@@ -68,10 +73,12 @@ lexer _ = error "Lexical error"
 lexNum cs = case span isDigit cs of
   (num, rest) -> TokenNum (read num) : lexer rest
 
-lexKw cs = case span isAlpha cs of
+lexKw cs = case span (\c -> isAlphaNum c || c == '_') cs of
   ("true", rest) -> TokenTrue : lexer rest
   ("false", rest) -> TokenFalse : lexer rest
   ("if", rest) -> TokenIf : lexer rest
   ("app", rest) -> TokenApp : lexer rest
   ("lambda", rest) -> TokenLam : lexer rest
+  ("Num", rest) -> TokenTNum : lexer rest
+  ("Bool", rest) -> TokenTBool : lexer rest
   (var, rest) -> TokenVar var : lexer rest

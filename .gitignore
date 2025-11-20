@@ -1,0 +1,9 @@
+# Haskell build artifacts
+*.hi
+*.o
+lambda
+Main
+
+# Test files
+test_cases.txt
+test_results.md

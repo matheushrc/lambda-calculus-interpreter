@@ -22,7 +22,10 @@ subst x s y@(Var v) =
 subst x s (Num n) = Num n -- (\x -> 2) 5, não há substituição a ser feita, pois o x é uma constante, não ha nada para substituir dentro do corpo da lambda
 subst x s BTrue = BTrue
 subst x s BFalse = BFalse
-subst x s (Lam y tp t1) = Lam y tp (subst x s t1)
+subst x s (Lam y tp t1) =
+  if x == y
+    then Lam y tp t1  -- Variable shadowing: don't substitute
+    else Lam y tp (subst x s t1)
 -- eu tenho que procura a substituiição tambem da exprassao t1 da lambda, por isso eu realizo a chamada recursiva
 subst x s (App t1 t2) = App (subst x s t1) (subst x s t2)
 subst x s (Add t1 t2) = Add (subst x s t1) (subst x s t2)
@@ -64,11 +67,19 @@ step (Times (Num n1) e2) =
   let e2' = step e2
    in Times (Num n1) e2'
 step (Times e1 e2) = Times (step e1) e2
-step (App (Lam x tp e1) e2) =
-  if isValue e2
-    then
-      subst x e2 e1 -- trata isso (\x -> x + 1) 2
-    else App (Lam x tp e1) (step e2) -- trata isso (\x -> x + 1) (2 + 3)
+-- E-App1: evaluate e1 first if it's not a lambda
+step (App e1 e2) =
+  let e1' = case e1 of
+              Paren e -> e  -- Unwrap Paren
+              _ -> e1
+  in if isValue e1'
+    then case e1' of
+      (Lam x tp body) ->
+        if isValue e2
+          then subst x e2 body  -- E-AppAbs: beta reduction
+          else App e1' (step e2) -- E-App2: evaluate e2
+      _ -> error "Runtime error: trying to apply non-function"
+    else App (step e1) e2       -- E-App1: evaluate e1
 -- Implementar step para If
 -- slide 10
 step (If BTrue e1 e2) = e1
@@ -92,6 +103,10 @@ step (Tuple exprs) = Tuple (stepTupleElements exprs)
         else step e : es
 -- step for Paren
 step (Paren e) = e
+-- If we reach here with a value or variable, something went wrong
+step (Var x) = error $ "Runtime error: free variable " ++ x
+step e | isValue e = e  -- Already a value, no step needed
+       | otherwise = error $ "Runtime error: cannot step expression"
 -- step (App (Lam "x" (Add (Var "x") (Num 1))) (Num 2))
 -- step (App (Lam "x" (Add (Var "x") (Num 1))) (Add (Num 2) (Num 3)))
 eval :: Expr -> Expr
