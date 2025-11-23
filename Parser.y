@@ -18,9 +18,11 @@ import Lexer
     true            { TokenTrue }
     false           { TokenFalse }
     '+'             { TokenPlus }
+    '-'             { TokenMinus }
     '*'             { TokenTimes }
     "&&"            { TokenAnd }
     "||"            { TokenOr }
+    "xor"           { TokenXor }
     '('             { TokenLParen }
     ')'             { TokenRParen }
     'if'            { TokenIf }
@@ -43,15 +45,18 @@ Exp     : num                           { Num $1 }
         | true                          { BTrue }
         | false                         { BFalse }
         | Exp '+' Exp                   { Add $1 $3 }
+        | Exp '-' Exp                   { Sub $1 $3 }
         | Exp '*' Exp                   { Times $1 $3 }
         | Exp "&&" Exp                  { And $1 $3 }
         | Exp "||" Exp                  { Or $1 $3 }
+        | Exp "xor" Exp                 { Xor $1 $3 }
         | '(' Exp ')'                   { Paren $2 }
         | 'if' Exp Exp Exp              { If $2 $3 $4 }
         | '{' ExpList '}'               { Tuple $2 }
         | '{' '}'                       { Tuple [] }
         | Exp '.' num                   { Proj $1 $3 }
         | '\\' var ':' Type "->" Exp    { Lam $2 $4 $6 } -- (\\x : TNum -> 5 + x)
+        | Exp Exp                       { App $1 $2 }
 
 ExpList : Exp                           { [$1] }
         | Exp ',' ExpList               { $1 : $3 }
@@ -62,9 +67,6 @@ Type    : Bool                          { TBool }
         | Type "->" Type                { TFun $1 $3 }
         -- | '{' TypeList '}'              { TTuple $2 }
         | '{' '}'                       { TTuple [] }
-
-
---  eval (parser (lexer "(\\x : Num -> (5*5+x)) 5"))
 
 {
 
