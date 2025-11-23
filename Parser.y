@@ -9,8 +9,13 @@ import Lexer
 %error { parseError }
 
 -- Precedence order: lower priority rules first
+%right "->"
+%left "||"
+%left "&&"
+%left "xor"
 %left '+' '-'
 %left '*'
+%left APP
 
 %token
     num             { TokenNum $$ }
@@ -56,7 +61,7 @@ Exp     : num                           { Num $1 }
         | '{' '}'                       { Tuple [] }
         | Exp '.' num                   { Proj $1 $3 }
         | '\\' var ':' Type "->" Exp    { Lam $2 $4 $6 } -- (\\x : TNum -> 5 + x)
-        | Exp Exp                       { App $1 $2 }
+        | Exp Exp %prec APP             { App $1 $2 }
 
 ExpList : Exp                           { [$1] }
         | Exp ',' ExpList               { $1 : $3 }
@@ -65,6 +70,7 @@ ExpList : Exp                           { [$1] }
 Type    : Bool                          { TBool }
         | Num                           { TNum }
         | Type "->" Type                { TFun $1 $3 }
+        | '(' Type ')'                  { $2 }
         -- | '{' TypeList '}'              { TTuple $2 }
         | '{' '}'                       { TTuple [] }
 

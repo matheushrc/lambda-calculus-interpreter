@@ -1,6 +1,6 @@
 module TypeChecker where
 
-import Lexer
+import Lexer (Expr (..), Ty (..))
 
 type Ctx = [(String, Ty)]
 
@@ -9,6 +9,11 @@ typeof ctx BTrue = Just TBool
 typeof ctx BFalse = Just TBool
 typeof ctx (Num n) = Just TNum
 typeof ctx (Add e1 e2) =
+  case (typeof ctx e1, typeof ctx e2) of
+    (Just TNum, Just TNum) -> Just TNum
+    _ -> Nothing
+-- TypeOf para operador SUB
+typeof ctx (Sub e1 e2) =
   case (typeof ctx e1, typeof ctx e2) of
     (Just TNum, Just TNum) -> Just TNum
     _ -> Nothing
@@ -27,6 +32,11 @@ typeof ctx (Or e1 e2) =
   case (typeof ctx e1, typeof ctx e2) of
     (Just TBool, Just TBool) -> Just TBool
     _ -> Nothing
+-- TypeOf para operador XOR
+typeof ctx (Xor e1 e2) =
+  case (typeof ctx e1, typeof ctx e2) of
+    (Just TBool, Just TBool) -> Just TBool
+    _ -> Nothing
 -- TypeOf para operador IF
 typeof ctx (If e e1 e2) =
   case typeof ctx e of
@@ -42,7 +52,7 @@ typeof ctx (Paren e) = typeof ctx e
 typeof ctx (Var x) = lookup x ctx
 typeof ctx (Lam x tp b) =
   let ctx' = (x, tp) : ctx
-   in case (typeof ctx' b) of
+   in case typeof ctx' b of
         Just tr -> Just (TFun tp tr) -- tr = type result; tp = type parameter
         _ -> Nothing
 typeof ctx (App e1 e2) =

@@ -7,7 +7,7 @@ isValue :: Expr -> Bool
 isValue BTrue = True
 isValue BFalse = True
 isValue (Num _) = True
-isValue (Lam _ _ _) = True
+isValue Lam {} = True
 isValue (Tuple exprs) = all isValue exprs
 isValue (Paren e) = isValue e
 isValue _ = False
@@ -29,6 +29,7 @@ subst x s (Add t1 t2) = Add (subst x s t1) (subst x s t2)
 subst x s (And t1 t2) = And (subst x s t1) (subst x s t2)
 subst x s (Sub t1 t2) = Sub (subst x s t1) (subst x s t2)
 subst x s (Or t1 t2) = Or (subst x s t1) (subst x s t2)
+subst x s (Xor t1 t2) = Xor (subst x s t1) (subst x s t2)
 subst x s (Times t1 t2) = Times (subst x s t1) (subst x s t2)
 subst x s (If t1 t2 t3) = If (subst x s t1) (subst x s t2) (subst x s t3)
 subst x s (Tuple exprs) = Tuple (map (subst x s) exprs)
