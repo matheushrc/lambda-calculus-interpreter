@@ -43,7 +43,7 @@ typeof ctx (Var x) = lookup x ctx
 typeof ctx (Lam x tp b) =
   let ctx' = (x, tp) : ctx
    in case (typeof ctx' b) of
-        Just tr -> Just (TFun tp tr)
+        Just tr -> Just (TFun tp tr) -- tr = type result; tp = type parameter
         _ -> Nothing
 typeof ctx (App e1 e2) =
   case typeof ctx e1 of

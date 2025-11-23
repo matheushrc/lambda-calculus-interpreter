@@ -69,12 +69,11 @@ step (App (Lam x tp e1) e2) =
     then
       subst x e2 e1 -- trata isso (\x -> x + 1) 2
     else App (Lam x tp e1) (step e2) -- trata isso (\x -> x + 1) (2 + 3)
--- Implementar step para If
--- slide 10
+    -- Implementar step para If
+    -- slide 10
 step (If BTrue e1 e2) = e1
 step (If BFalse e1 e2) = e2
 step (If e e1 e2) = If (step e) e1 e2
-
 -- E-ProjTuple: {v1, ..., vn}.j -> vj
 step (Proj (Tuple exprs) idx) =
   if all isValue exprs
@@ -86,10 +85,11 @@ step (Proj e idx) = Proj (step e) idx
 step (Tuple exprs) = Tuple (stepTupleElements exprs)
   where
     stepTupleElements [] = []
-    stepTupleElements (e:es) =
+    stepTupleElements (e : es) =
       if isValue e
         then e : stepTupleElements es
         else step e : es
+
 -- step for Paren
 step (Paren e) = e
 -- step (App (Lam "x" (Add (Var "x") (Num 1))) (Num 2))
