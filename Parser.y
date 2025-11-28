@@ -10,9 +10,8 @@ import Lexer
 
 -- Precedence order: lower priority rules first
 %right "->"
-%left "||"
+%left "||" "xor"
 %left "&&"
-%left "xor"
 %left '+' '-'
 %left '*'
 %left APP
@@ -71,7 +70,6 @@ Type    : Bool                          { TBool }
         | Num                           { TNum }
         | Type "->" Type                { TFun $1 $3 }
         | '(' Type ')'                  { $2 }
-        -- | '{' TypeList '}'              { TTuple $2 }
         | '{' '}'                       { TTuple [] }
 
 {

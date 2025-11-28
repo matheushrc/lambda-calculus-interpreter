@@ -39,7 +39,7 @@ subst x s (Paren e) = Paren (subst x s e)
 -- subst "x" (Num 2) (Lam "y" (Var "x")) -> Lam "y" (Num 2)
 -- subst "x" (Num 2) (App (Lam "y" (Var "x")) (Var "x")) ->
 -- example with two lambdas
--- subst "x" (Lam "z" (Var "z")) (App (Lam "y" (Var "x")) (Var "x"))
+-- subst "x" (Lam "z" Lexer.TNum (Var "z")) (App (Lam "y" Lexer.TNum (Var "x")) (Var "x"))
 
 -- subst de if tem 3 coisas
 -- subst de times, or, if
@@ -50,15 +50,10 @@ if' cond x y = if cond then x else y
 
 step :: Expr -> Expr
 step (Add (Num n1) (Num n2)) = Num (n1 + n2)
--- step (Add (Num n1) e2) = Add (Num n1) (step e2)
-step (Add (Num n1) e2) =
-  let e2' = step e2
-   in Add (Num n1) e2'
+step (Add (Num n1) e2) = Add (Num n1) (step e2)
 step (Add e1 e2) = Add (step e1) e2
 step (Sub (Num n1) (Num n2)) = Num (n1 - n2)
-step (Sub (Num n1) e2) =
-  let e2' = step e2
-   in Sub (Num n1) e2'
+step (Sub (Num n1) e2) = Sub (Num n1) (step e2)
 step (Sub e1 e2) = Sub (step e1) e2
 -- mais especifica para que aceita mais coisas
 step (And BFalse e2) = BFalse
@@ -81,26 +76,17 @@ step (Xor e1 e2) =
     (Xor (step e1) e2)
 -- Implementar step para Times
 step (Times (Num n1) (Num n2)) = Num (n1 * n2)
-step (Times (Num n1) e2) =
-  let e2' = step e2
-   in Times (Num n1) e2'
+step (Times (Num n1) e2) = Times (Num n1) (step e2)
 step (Times e1 e2) = Times (step e1) e2
 step (App (Lam x tp e1) e2) =
-  if isValue e2
-    then
-      subst x e2 e1 -- trata isso (\x -> x + 1) 2
-    else App (Lam x tp e1) (step e2) -- trata isso (\x -> x + 1) (2 + 3)
+  if'
+    (isValue e2)
+    (subst x e2 e1) -- trata isso (\x -> x + 1) 2
+    (App (Lam x tp e1) (step e2)) -- trata isso (\x -> x + 1) (2 + 3)
 step (App e1 e2) = App (step e1) e2
 step (If BTrue e1 e2) = e1
 step (If BFalse e1 e2) = e2
 step (If e e1 e2) = If (step e) e1 e2
--- E-ProjTuple: {v1, ..., vn}.j -> vj
-step (Proj (Tuple exprs) idx) =
-  if all isValue exprs
-    then exprs !! (idx - 1) -- 1-based to 0-based indexing
-    else Proj (step (Tuple exprs)) idx
--- E-Proj: t1 -> t1' implies t1.i -> t1'.i
-step (Proj e idx) = Proj (step e) idx
 -- E-Tuple: evaluate tuple elements left-to-right
 step (Tuple exprs) = Tuple (stepTupleElements exprs)
   where
@@ -109,7 +95,13 @@ step (Tuple exprs) = Tuple (stepTupleElements exprs)
       if isValue e
         then e : stepTupleElements es
         else step e : es
-
+-- E-ProjTuple: {v1, ..., vn}.j -> vj
+step (Proj (Tuple exprs) idx) =
+  if all isValue exprs
+    then exprs !! (idx - 1) -- 1-based to 0-based indexing
+    else Proj (step (Tuple exprs)) idx
+-- E-Proj: t1 -> t1' implies t1.i -> t1'.i
+step (Proj e idx) = Proj (step e) idx
 -- step for Paren
 step (Paren e) = e
 
