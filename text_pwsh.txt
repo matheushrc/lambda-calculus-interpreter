@@ -1,20 +1,11 @@
-42
-true && false
-true
-false
-3 + 5
-10 - 3
-4 * 5
+(5 - 3) * 2
 \x : Num -> x * 2
 (\x : Num -> x + 1) 5
 if true 10 20
 false || true
-(5 + 3) * 2
 {10, 20, 30}.2
 {1, 2, 3}
 (\y : Num -> y) 7
 if (true xor true) 0 1
 true xor false
-(\x : Num -> x + 1) ((\y : Num -> y * 2) {1,2,3,4}.3))
-
-Get-Content COMANDOS_COPIAR.txt | ForEach-Object { echo $_ | runhaskell .\Main.hs }
+(\x : Num -> x + 1) ((\y : Num -> y * 2) {1,2,3,4}.3)

@@ -34,3 +34,9 @@ A avaliação deste trabalho será dividida em duas etapas.
 ## PLÁGIO
 
 - Qualquer ocorrência de plágio (cópia da internet ou entre colegas) será tratada com rigor, sendo atribuída nota zero para todos os integrantes dos grupos envolvidos.
+
+## Testando a gramatica
+
+```pwsh
+Get-Content text_pwsh.txt | ForEach-Object { echo $_ | runhaskell .\Main.hs }
+```
