@@ -37,6 +37,14 @@ A avaliação deste trabalho será dividida em duas etapas.
 
 ## Testando a gramatica
 
+Compilar o código:
+
 ```pwsh
-Get-Content text_pwsh.txt | ForEach-Object { echo $_ | runhaskell .\Main.hs }
+ghc -o interpreter Main.hs
+```
+
+Executar os testes:
+
+```pwsh
+Get-Content text_pwsh.txt | ForEach-Object { echo $_ | .\interpreter.exe }
 ```
