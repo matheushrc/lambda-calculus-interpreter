@@ -82,11 +82,11 @@ testParen = do
   print $ evalStr "(5 + 3) * 2"
 
 -- Test 11: Proj - Projeção de tupla
--- Expressão: "{10, 20, 30}.2"
+-- Expressão: "{10, 20, 30}.1"
 testProj :: IO ()
 testProj = do
-  putStrLn "\nTest 11 - Proj ({10, 20, 30}.2):"
-  print $ evalStr "{10, 20, 30}.2"
+  putStrLn "\nTest 11 - Proj ({10, 20, 30}.1):"
+  print $ evalStr "{10, 20, 30}.1"
 
 -- Test 12: Sub - Subtração de números
 -- Expressão: "10 - 3"
@@ -135,7 +135,7 @@ testAllFeatures = do
   putStrLn "TESTE COMPLEXO COM TODAS AS FUNCIONALIDADES"
   putStrLn "===============================================\n"
 
-  let expr = "((\\f : (Num -> Num) -> if (true && (false || true)) ({((f 5)), ((10 - 3) * 2), (true xor false)}.1 + 8) 0) (\\x : Num -> x + 1))"
+  let expr = "((\\f : (Num -> Num) -> if (true && (false || true)) ({((f 5)), ((10 - 3) * 2), (true xor false)}.0 + 8) 0) (\\x : Num -> x + 1))"
   putStrLn "Expressão complexa:"
   putStrLn expr
   putStrLn "\nResultado:"

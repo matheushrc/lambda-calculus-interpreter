@@ -79,9 +79,9 @@ typeof ctx (Tuple exprs) =
 typeof ctx (Proj e idx) =
   case typeof ctx e of
     Just (TTuple types) ->
-      if idx >= 1 && idx <= length types
-        then Just (types !! (idx - 1)) -- Convert 1-based to 0-based indexing
-        else Nothing
+      if idx >= 0 && idx < length types
+        then Just (types !! idx) -- 0-based indexing
+        else error "Index out of bounds"
     _ -> Nothing
 
 typecheck :: Expr -> Expr

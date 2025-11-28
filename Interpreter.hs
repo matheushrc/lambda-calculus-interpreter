@@ -92,14 +92,16 @@ step (Tuple exprs) = Tuple (stepTupleElements exprs)
   where
     stepTupleElements [] = []
     stepTupleElements (e : es) =
-      if isValue e
-        then e : stepTupleElements es
-        else step e : es
--- E-ProjTuple: {v1, ..., vn}.j -> vj
+      if'
+        (isValue e)
+        (e : stepTupleElements es)
+        (step e : es)
+-- E-ProjTuple: {v0, ..., vn}.j -> vj (0-based indexing)
 step (Proj (Tuple exprs) idx) =
-  if all isValue exprs
-    then exprs !! (idx - 1) -- 1-based to 0-based indexing
-    else Proj (step (Tuple exprs)) idx
+  if'
+    (all isValue exprs)
+    (exprs !! idx) -- 0-based indexing
+    (Proj (step (Tuple exprs)) idx)
 -- E-Proj: t1 -> t1' implies t1.i -> t1'.i
 step (Proj e idx) = Proj (step e) idx
 -- step for Paren
