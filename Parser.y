@@ -69,8 +69,12 @@ ExpList : Exp                           { [$1] }
 Type    : Bool                          { TBool }
         | Num                           { TNum }
         | Type "->" Type                { TFun $1 $3 }
+        | '(' Type ',' TypeList ')'     { TTuple ($2 : $4) }
         | '(' Type ')'                  { $2 }
         | '{' '}'                       { TTuple [] }
+
+TypeList : Type                         { [$1] }
+         | Type ',' TypeList            { $1 : $3 }
 
 {
 
